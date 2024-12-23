@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1>Analytics Dashboard</h1>
+<table>
+    <tr>
+        <th>Course</th>
+        <th>Total Time Spent (seconds)</th>
+        <th>Completion Rate (%)</th>
+    </tr>
+    {% for data in analytics %}
+        <tr>
+            <td>{{ data.course }}</td>
+            <td>{{ data.total_time_spent }}</td>
+            <td>{{ data.completion_rate }}</td>
+        </tr>
+    {% endfor %}
+</table>
+{% endblock %}

@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ profile.user.username | title }}'s Profile | Edu_PathWay{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+    <div class="profile-header">
+        <h2>{{ profile.user.username | title }}</h2>
+        {% if profile.user.is_instructor %}
+        <span class="badge badge-instructor">Instructor</span>
+        {% elif profile.user.is_student %}
+        <span class="badge badge-student">Student</span>
+        {% endif %}
+    </div>
+    <div class="profile-details">
+        <p><strong>Full Name:</strong> {{ profile.user.get_full_name }}</p>
+        <p><strong>Email:</strong> <a href="mailto:{{ profile.user.email }}">{{ profile.user.email }}</a></p>
+        <p><strong>Bio:</strong> {{ profile.bio }}</p>
+        <p><strong>Joined:</strong> {{ profile.user.date_joined|date:"F j, Y" }}</p>
+    </div>
+    <div class="profile-footer">
+        {% if profile.user == request.user %}
+        <a href="{% url 'edit_profile' %}" class="btn btn-primary">Edit Profile</a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

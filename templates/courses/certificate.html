@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Certificate of Completion</h2>
+<p>This certifies that <strong>{{ Certificate.user.username }}</strong> has successfully completed the course <strong>{{ certificate.course.title }}</strong>.</p>
+<p>Issued on: {{ certificate.issued_date }}</p>
+<p>By: {{ certificate.issued_by }}</p>
+<p>Certificate Code: {{ certificate.certificate_code }}</p>
+{% endblock %}

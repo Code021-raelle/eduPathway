@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1>Discussion Threads for {{ course.title }}</h1>
+<ul>
+    {% for thread in threads %}
+        <li>
+            <a href="{% url 'thread_replies' thread.id %}">{{ thread.title }}</a>
+            by {{ thread.user.username }} on {{ thread.created_at }}
+        </li>
+    {% empty %}
+        <li>No threads yet. <a href="{% url 'create_thread' course.id %}">Create one</a>!</li>
+    {% endfor %}
+</ul>
+{% endblock %}

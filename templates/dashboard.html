@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h1>Admin Dashboard</h1>
+    <p>Total Users: {{ total_users }}</p>
+    <p>Total Courses: {{ total_courses }}</p>
+
+    <h2>Most Popular Courses</h2>
+    <ul>
+        {% for course in most_popular_courses %}
+            <li>{{ course.title }} - Enrollments: {{ course.enrollments }}</li>
+        {% endfor %}
+    </ul>
+
+    <h2>All Courses Analytics</h2>
+    <table>
+        <tr>
+            <th>Course</th>
+            <th>Enrollments</th>
+            <th>Average Progress</th>
+        </tr>
+        {% for course in courses %}
+            <tr>
+                <td>{{ course.title }}</td>
+                <td>{{ course.enrollments }}</td>
+                <td>{{ course.avg_progress|floatformat:2 }}%</td>
+            </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>

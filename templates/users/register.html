@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block title %}Register | Edu_PathWay{% endblock %}
+
+{% block content %}
+<div class="register-container">
+    <h2 class="form-title">Create Your Account</h2>
+    <form method="post" class="form">
+        {% csrf_token %}
+        <div class="form-group">
+            {{ form.non_field_errors }}
+        </div>
+        {% for field in form %}
+        <div class="form-group">
+            {{ field.label_tag }}
+            {{ field }}
+            {{ field.errors }}
+        </div>
+        {% endfor %}
+        <button type="submit" class="btn btn-primary">Register</button>
+    </form>
+    <p class="login-prompt">
+        Already have an account? <a href="{% url 'login' %}" class="login-link">Login here</a>.
+    </p>
+</div>
+{% endblock %}

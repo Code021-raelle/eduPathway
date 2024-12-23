@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1>Live Sessions for {{ course.title }}</h1>
+<ul>
+    {% for session in sessions %}
+        <li>
+            <h3>{{ session.title }}</h3>
+            <p>{{ session.description }}</p>
+            <p>Date: {{ session.date }}</p>
+            <p>Duration: {{ session.duration_minutes }} minutes</p>
+            <a href="{{ session.link }}" target="_blank">Join Live Session</a>
+        </li>
+    {% empty %}
+        <li>No upcoming live sessions available for this course.</li>
+    {% endfor %}
+</ul>
+{% endblock %}

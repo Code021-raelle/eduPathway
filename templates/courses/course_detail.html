@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h3>Progress: {{ Progress.porgress }}</h3>
+<ul>
+    {% for lesson in course.lessons.all %}
+        <li>
+            {{ lesson.title }} - {{ lesson.description }}
+            {% if lesson in progress.completed_lessons.all %}
+                - <span>Completed</span>
+            {% else %}
+                - <a href="{% url 'complete_lesson' lesson.is %}">Mark as Completed</a>
+            {% endif %}
+        </li>
+    {% endfor %}
+</ul>
+
+<h2>{{ course.title }}</h2>
+<p>{{ course.description }}</p>
+<p>Price: {{ course.price }}</p>
+
+<h3>Reviews</h3>
+<ul>
+    {% for review in course.reviews.all %}
+        <li>
+            <strong>{{ review.user.username }}</strong>: {{ review.comment }} (Rating: {{ review.rating }})
+        </li>
+    {% empty %}
+        <li>No reviews yet. Be the first to <a href="{% url 'add_review' course.id %}">write a review</a>!</li>
+    {% endfor %}
+</ul>
+{% endblock %}

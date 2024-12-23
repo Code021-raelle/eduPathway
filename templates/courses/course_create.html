@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h2>Create a New Course</h2>
+
+    <form method="post" enctype="multipart/form-data" class="form-container">
+        {% csrf_token %}
+        {{ form.as_p }}
+
+        <pre>{{ form }}</pre>
+        <button type="submit" class="btn btn-primary">Create Course</button>
+    </form>
+
+    <h3>Form Debugging:</h3>
+    <pre>{{ form }}</pre>
+    <pre>{{ form.errors }}</pre>
+    <pre>{{ form.non_field_errors }}</pre>
+
+    {% if form.errors %}
+        <div class="form-errors">
+            <h3>Form Errors:</h3>
+            <ul>
+                {% for field, errors in form.errors.items %}
+                    <li><strong>{{ field }}:</strong> {{ errors|join:", " }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+
+    <hr>
+    <a href="{% url 'instructor_dashboard' %}" class="btn btn-secondary">Back to Dashboard</a>
+{% endblock %}
