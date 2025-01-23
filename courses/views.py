@@ -1,7 +1,8 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404, redirect
+from django.template.loader import render_to_string
 from django.forms import ModelForm
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse, HttpResponseRedirect
 from .models import (Course, UserCourseProgress, Lesson, Certificate, Review, Notification, Quiz, Question, Leaderboard,
                      Choice, DiscussionThread, DiscussionReply, CourseSerializer, CourseEngagement, UserProfile, UserProgress, StudyGroup, Message, Badge, UserBadge)
 from django.db.models import Avg, Count, F
@@ -11,7 +12,9 @@ from django.conf import settings
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from users.models import CustomUser
-from .forms import CourseForm
+from .forms import CourseForm, LessonForm, ReviewForm, EditProfileForm
+from django.utils.timezone import now
+from weasyprint import HTML
 from uuid import uuid4
 import stripe
 
@@ -38,16 +41,8 @@ def course_payment(request, course_id):
     return redirect(session.url, code=303)
 
 
-class LessonForm(ModelForm):
-    class Meta:
-        model = Lesson
-        fields = ['title', 'description', 'video_url', 'video', 'course']
-
-class ReviewForm(ModelForm):
-    class Meta:
-        model = Review
-        fields = ['rating', 'comment']
-
+def landing_page(request):
+    return render(request, 'landing_page.html')
 
 def course_detail(request, course_id):
     course = get_object_or_404(Course, id="course_id")
@@ -101,14 +96,18 @@ def add_lesson(request, course_id):
             lesson.course = course
             lesson.save()
             return redirect('instructor_dashboard')
-        else:
-            form = LessonForm()
-        return render(request, 'courses/add_lesson.html', {'form': form, 'course': course})
+    else:
+        form = LessonForm()
+    return render(request, 'courses/add_lesson.html', {'form': form, 'course': course})
 
 @login_required
 def complete_lesson(request, lesson_id):
     lesson = get_object_or_404(Lesson, id=lesson_id)
-    progress = UserCourseProgress.objects.get(user=request.user, course=lesson.course)
+    try:
+        progress = UserCourseProgress.objects.get(user=request.user, course=lesson.course)
+    except UserCourseProgress.DoesNotExist:
+        progress = UserCourseProgress.objects.create(user=request.user, course=lesson.course)
+
     progress.completed_lessons.add(lesson)
     total_lessons = lesson.course.lessons.count()
     completed_lessons = progress.completed_lessons.count()
@@ -129,6 +128,17 @@ def generate_certificate(request, course_id):
         return render(request, 'courses/certificate.html', {'certificate': certificate})
     else:
         return redirect('course_detail', course_id=course_id)
+    
+
+def download_certificate(request, course_id):
+    course = get_object_or_404(Course, id=course_id)
+    certificate = Certificate.objects.get(user=request.user, course=course)
+    html = render_to_string('courses/certificate.html', {'certificate': certificate})
+    pdf_file = HTML(string=html).write_pdf()
+
+    response = HttpResponse(pdf_file, content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="certificate.pdf"'
+    return response
 
 
 @login_required
@@ -220,6 +230,49 @@ def create_thread(request, course_id):
     return render(request, 'forums/create_thread.html', {'course_id': course_id})
 
 
+def thread_replies(request, course_id, thread_id):
+    course = get_object_or_404(Course, id=course_id)
+    thread = get_object_or_404(DiscussionThread, id=thread_id, course=course)
+
+    if request.method == "POST":
+        content = request.POST.get('content')
+        if content:
+            DiscussionReply.objects.create(
+                thread=thread,
+                user=request.user,
+                content=content
+            )
+        return redirect('thread_replies', course_id=course.id, thread_id=thread.id)
+    
+    replies = thread.replies.all()
+    return render(request, 'forums/thread_replies.html', {'thread': thread, 'replies': replies})
+
+
+@login_required
+def add_reply(request, course_id, thread_id):
+    thread = get_object_or_404(DiscussionThread, id=thread_id)
+    if request.method == 'POST':
+        reply_content = request.POST.get('content')
+        if reply_content:
+            reply = DiscussionReply.objects.create(
+                thread=thread,
+                user=request.user,
+                content=reply_content
+            )
+
+            # Notify the thread owner
+            if thread.user != request.user:     # Don't notify user if they're replying to their own thread
+                Notification.objects.create(
+                    user=thread.user,
+                    thread=thread,
+                    reply=reply,
+                    message=f"{request.user.username} replied to your thread '{thread.title}'"
+                )
+            
+            return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+
+
 class CourseListView(APIView):
     def get(self, request):
         courses = Course.objects.all()
@@ -284,8 +337,21 @@ def user_profile(request, username):
     return render(request, 'profiles/profile.html', {'profile': profile})
 
 
-def course_create(request):
-    return render(request, 'courses/course_create.html')
+@login_required
+def edit_profile(request):
+    profile = request.user.profile
+    if request.method == 'POST':
+        form = EditProfileForm(request.POST, request.FILES, instance=profile)
+        if form.is_valid():
+            form.save()
+            return redirect('user_profile')
+    else:
+        form = EditProfileForm(instance=profile, initial={
+            'first_name': request.user.first_name,
+            'last_name': request.user.last_name,
+            'email': request.user.email
+        })
+    return render(request, 'profiles/edit_profile.html', {'form': form})
 
 
 def course_groups(request, course_id):
@@ -303,8 +369,24 @@ def join_group(request, group_id):
 
 @login_required
 def inbox(request):
-    messages = Message.objects.filter(receiver=request.user).order_by('-timestamp')
-    return render(request, 'messages/inbox.html', {'messages': messages})
+    received_messages = Message.objects.filter(receiver=request.user).order_by('-timestamp')
+
+    # Handle reply
+    if request.method == 'POST':
+        original_message_id = request.POST.get('original_message_id')
+        reply_content = request.POST.get('reply_content')
+
+        if original_message_id and reply_content:
+            original_message = get_object_or_404(Message, id=original_message_id)
+            Message.objects.create(
+                sender=request.user,
+                receiver=original_message.sender,
+                content=reply_content,
+                parent=original_message
+            )
+            return redirect('inbox')
+
+    return render(request, 'messages/inbox.html', {'messages': received_messages})
 
 
 @login_required
@@ -312,9 +394,48 @@ def send_message(request):
     if request.method == "POST":
         receiver = CustomUser.objects.get(username=request.POST.get('receiver'))
         content = request.POST.get('content')
-        Message.objects.create(sender=request.user, receiver=receiver, content=content)
+        attachment = request.FILES.get('attachment')
+
+        message = Message.objects.create(
+            sender=request.user,
+            receiver=receiver,
+            content=content,
+            attachment=attachment
+        )
+        receiver.userprofile.last_seen = now()
+        receiver.userprofile.save()
         return redirect('inbox')
     return render(request, 'messages/send_message.html')
+
+
+@login_required
+def chat(request):
+    user = request.user
+    conversations = Message.objects.filter(receiver=user).distinct('sender') | Message.objects.filter(sender=user).distinct('receiver')
+    
+    chat_with = request.GET.get('chat_with')
+    active_conversation = []
+    active_user = None
+
+    if chat_with:
+        active_user = CustomUser.objects.get(username=chat_with)
+        active_conversation = Message.objects.filter(
+            sender=user, receiver=active_user
+        ) | Message.objects.filter(
+            sender=active_user, receiver=user
+        ).order_by('timestamp')
+
+    if request.method == 'POST' and active_user:
+        content = request.POST.get('content')
+        Message.objects.create(sender=user, receiver=active_user, content=content)
+        return redirect(f'?chat_with={active_user.username}')
+
+    return render(request, 'chat.html', {
+        'user': user,
+        'conversations': conversations,
+        'active_conversation': active_conversation,
+        'active_user': active_user,
+    })
 
 
 def award_badges(user):
