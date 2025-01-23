@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>{{ thread.title }}</h2>
+    <p>Created by {{ thread.user.username }} on {{ thread.created_at }}</p>
+    <hr>
+    <h3>Replies:</h3>
+    <ul class="list-group">
+        {% for reply in replies %}
+            <li class="list-group-item">
+                <p>{{ reply.content }}</p>
+                <small>By {{ reply.user.username }} on {{ reply.created_at }}</small>
+            </li>
+        {% empty %}
+            <p>No replies yet. Be the first to respond!</p>
+        {% endfor %}
+    </ul>
+
+    <hr>
+    <h3>Post a Reply:</h3>
+    <form method="POST">
+        {% csrf_token %}
+        <textarea name="content" class="form-control" rows="3" required></textarea>
+        <button type="submit" class="btn btn-primary mt-2">Reply</button>
+    </form>
+    
+    <a href="{% url 'course_threads' thread.course.id %}" class="btn btn-secondary">Back to Threads</a>
+</div>
+{% endblock %}
