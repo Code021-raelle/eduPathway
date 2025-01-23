@@ -4,6 +4,11 @@ from users.models import CustomUser
 from rest_framework import serializers
 from django.core.files.storage import FileSystemStorage
 from datetime import timedelta
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
+import json
 
 
 class Module(models.Model):
@@ -12,16 +17,19 @@ class Module(models.Model):
 
 
 class Course(models.Model):
-    title = models.CharField(max_length=255)
-    description = models.TextField()
-    tags = models.ManyToManyField('Tag', blank=True)
-    price = models.DecimalField(max_digits=10, decimal_places=2)
-    image = models.ImageField(upload_to='courses/%Y/%m/%d')
+    title = models.CharField(max_length=255, help_text="Enter the course title.")
+    description = models.TextField(help_text="Enter a brief description of the course.")
+    tags = models.ManyToManyField('Tag', blank=True, help_text="Select tags for course.")
+    price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, help_text="Enter the course price.")
+    image = models.ImageField(upload_to='courses/%Y/%m/%d', null=True, blank=True, help_text="Upload an image for the course.")
     instructor = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="courses"
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="courses", verbose_name="Course Creator"
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']      # Sort courses by creation date descending
 
     def __str__(self):
         return self.title
@@ -35,14 +43,19 @@ class Lesson(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name="lessons")
     title = models.CharField(max_length=255)
     description = models.TextField()
+    thumbnail = models.ImageField(upload_to='thumbnails/', blank=True, null=True)
     video_url = models.URLField()
     video = models.FileField(upload_to='lessons/%Y/%m/%d', default="https://www.example.com/placeholder-video.mp4")
+    resources = models.FileField(upload_to='resources/', blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.title
 
 class UserCourseProgress(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
-    completed_lessons = models.ManyToManyField(Lesson, blank=True)
+    completed_lessons = models.ManyToManyField('Lesson', blank=True)
     progress = models.FloatField(default=0.0)  # Percentage of course completed
 
 class Certificate(models.Model):
@@ -60,9 +73,15 @@ class Review(models.Model):
 
 class Notification(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="notifications")
+    thread = models.ForeignKey('DiscussionThread', on_delete=models.Case, null=True, blank=True)
+    reply = models.ForeignKey('DiscussionReply', on_delete=models.CASCADE, null=True, blank=True)
     message = models.TextField()
     is_read = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Notifiation for {self.user.username}: {self.message}"
+
 
 class Quiz(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name="quizzes")
@@ -142,11 +161,26 @@ class UserProgress(models.Model):
 
 
 class UserProfile(models.Model):
-    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='profile')
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='userprofile')
+    profile_picture = models.ImageField(upload_to='profile_pictures/', null=True, blank=True)
     bio = models.TextField(blank=True, null=True)
     interests = models.ManyToManyField('Tag', blank=True)
     completed_courses = models.ManyToManyField(Course, blank=True)
+    last_seen = models.DateTimeField(auto_now=True)     # For "last seen" status
+    status_message = models.TextField(blank=True, null=True)
+    status_image = models.ImageField(upload_to='status/', blank=True, null=True)
 
+    def __str__(self):
+        return f"{self.user.username}'s Profile"
+
+@receiver(post_save, sender=CustomUser)
+def create_user_profile(sender, instance, created, **kwargs):
+    if created:
+        UserProfile.objects.create(user=instance)
+
+@receiver(post_save, sender=CustomUser)
+def save_user_profile(sender, instance, **kwargs):
+    instance.profile.save()
 
 class StudyGroup(models.Model):
     name = models.CharField(max_length=255)
@@ -160,7 +194,31 @@ class Message(models.Model):
     receiver = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="received_messages")
     content = models.TextField()
     timestamp = models.DateTimeField(auto_now_add=True)
+    is_read = models.BooleanField(default=False)
+    attachment = models.FileField(upload_to='attachments/', blank=True, null=True)
+    parent = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='replies')
 
+    def __str__(self):
+        return f"From {self.sender} to {self.receiver}: {self.content}"
+
+# Signal to send updates
+def broadcast_message(sender, instance, **kwargs):
+    channel_layer = get_channel_layer()
+    room_group_name = f'chat_{instance.receiver.username}'
+
+    async_to_sync(channel_layer.group_send)(
+        room_group_name,
+        {
+            'type': 'chat_message',
+            'message': json.dumps({
+                'sender': instance.sender.username,
+                'content': instance.content,
+                'timestamp': instance.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
+            }),
+        }
+    )
+
+post_save.connect(broadcast_message, sender=Message)
 
 class Badge(models.Model):
     name = models.CharField(max_length=255)
