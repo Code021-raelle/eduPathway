@@ -1,4 +1,5 @@
 {% load static %}
+{% load widget_tweaks %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -12,17 +13,54 @@
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <!-- Favicon -->
     <link rel="icon" href="{% static 'images/favicon.ico' %}" type="image/x-icon">
+    <!-- Awesome font -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
 </head>
 <body>
     <header class="bg-light py-3 mb-4 border-bottom">
         <div class="container d-flex justify-content-between align-items-center">
-            <h1 class="h4"><a href="{% url 'course_list' %}" class="text-decoration-none text-dark">Edu_PathWay</a></h1>
+            <h1 class="h4"><a href="{% url 'course_list' %}" class="text-decoration-none text-dark">EduPathway</a></h1>
             <nav>
                 <ul class="nav">
                     <li class="nav-item"><a href="{% url 'course_list' %}" class="nav-link">Courses</a></li>
                     {% if request.user.is_authenticated %}
-                        <li class="nav-item"><a href="{% url 'logout' %}" class="nav-link">Logout</a></li>
-                        <li class="nav-item"><span class="nav-link disabled">Welcome, {{ request.user.username }}</span></li>
+                        <li class="nav-item">
+                            <a href="{% url 'view_notifications' %}" class="nav-link position-relative">
+                                <i class="fa fa-bell"></i> Notifications
+                                {% if unread_count > 0 %}
+                                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                        {{ unread_count }}
+                                        <span class="visually-hidden">unread notifications</span>
+                                    </span>
+                                {% endif %}
+                            </a>
+                        </li>
+                        
+                        <!-- User Profile Dropdown -->
+                        <li class="nav-item dropdown">
+                            <a 
+                                class="nav-link dropdown-toggle d-flex align-items-center" 
+                                href="#" 
+                                id="userDropdown" 
+                                role="button" 
+                                data-bs-toggle="dropdown" 
+                                aria-expanded="false">
+                                <img 
+                                    src="{% if request.user.profile_picture %}{{ request.user.profile_picture.url }}{% else %}{% static 'default-profile.png' %}{% endif %}" 
+                                    alt="User Icon" 
+                                    class="rounded-circle" 
+                                    style="width: 30px; height: 30px; object-fit: cover;">
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                                <li><a class="dropdown-item">{{ request.user.first_name }} {{ request.user.last_name }}</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{% url 'user_profile' request.user.username %}">Profile</a></li>
+                                <li><a class="dropdown-item" href="{% url 'instructor_dashboard' %}">Instructor Dashboard</a></li>
+                                <li><a class="dropdown-item" href="">Settings</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{% url 'logout' %}">Logout</a></li>
+                            </ul>
+                        </li>
                     {% else %}
                         <li class="nav-item"><a href="{% url 'login' %}" class="nav-link">Login</a></li>
                         <li class="nav-item"><a href="{% url 'register' %}" class="nav-link">Register</a></li>
