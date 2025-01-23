@@ -33,6 +33,8 @@ ALLOWED_HOSTS = []
 INSTALLED_APPS = [
     'users',
     'courses',
+    'widget_tweaks',
+    'channels',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -138,3 +140,16 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 STRIPE_SECRET_KEY = 'my-secret-key'
 STRIPE_PUBLISHABLE_KEY = 'my-publishable-key'
+
+# Set ASGI application
+ASGI_APPLICATION = 'eduPathway.asgi.application'
+
+# Configure Redis as the channel layer backend
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            'hosts': [('127.0.0.1', 6379)],     # Redis server
+        },
+    },
+}
