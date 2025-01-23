@@ -1,13 +1,32 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h2>Instructor Dashboard</h2>
-<p>Welcome, {{ request.user.username }}!</p>
-<a href="{% url 'course_create' %}">Create a New Course</a>
-<h3>Your Courses</h3>
-<ul>
-    {% for course in courses %}
-        <li>{{ course.title }} - <a href="#">Edit</a></li>
-    {% endfor %}
-</ul>
+<div class="container mt-4">
+    <h2 class="mb-4">Instructor Dashboard</h2>
+    <p class="lead">Welcome, {{ request.user.username }}!</p>
+    <a href="{% url 'course_create' %}" class="btn btn-success mb-3">Create a New Course</a>
+
+    <h3>Your Courses</h3>
+    {% if courses %}
+        <div class="row">
+            {% for course in courses %}
+                <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+                    <div class="card h-100 shadow-sm">
+                        {% if course.image %}
+                            <img src="{{ course.image.url }}" class="card-img-top" alt="{{ course.title }}" style="height: 150px; object-fit: cover;">
+                        {% else %}
+                            <img src="{{ course.image.url }}" class="card-img-top" alt="Default Course Image">
+                        {% endif %}
+                        <div class="card-body">
+                            <h5 class="card-title">{{ course.title }}</h5>
+                            <a href="#" class="btn btn-primary">Edit</a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="text-muted">You have not created any courses yet.</p>
+    {% endif %}
+</div>
 {% endblock %}
