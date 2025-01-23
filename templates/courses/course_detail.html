@@ -1,32 +1,68 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h3>Progress: {{ Progress.porgress }}</h3>
-<ul>
-    {% for lesson in course.lessons.all %}
-        <li>
-            {{ lesson.title }} - {{ lesson.description }}
-            {% if lesson in progress.completed_lessons.all %}
-                - <span>Completed</span>
-            {% else %}
-                - <a href="{% url 'complete_lesson' lesson.is %}">Mark as Completed</a>
-            {% endif %}
-        </li>
-    {% endfor %}
-</ul>
+<div class="container mt-4">
+    <!-- Course Title -->
+    <h2>{{ course.title }}</h2>
+    <p>{{ course.description }}</p>
+    <p><strong>Price:</strong> ${{ course.price }}</p>
 
-<h2>{{ course.title }}</h2>
-<p>{{ course.description }}</p>
-<p>Price: {{ course.price }}</p>
+    <!-- Course Thread Link -->
+    <p class="mt-3">
+        <a href="{% url 'course_threads' course.id %}" class="btn btn-outline-secondary">
+            Join the Discussion Thread
+        </a>
+    </p>
+    
+    <!-- Lessons Section -->
+    <h3 class="mt-4">Lessons</h3>
+    <div class="row g-3">
+        {% for lesson in course.lessons.all %}
+            <div class="col-md-4">
+                <div class="card">
+                    <!-- Lesson Thumbnail -->
+                    {% if lesson.thumbnail %}
+                        <img src="{{ lesson.thumbnail.url }}" class="card-img-top" alt="{{ lesson.title }}">
+                    {% else %}
+                        <img src="" class="card-img-top" alt="Default Thumbnail">
+                    {% endif %}
+                    
+                    <div class="card-body">
+                        <!-- Lesson Title -->
+                        <h5 class="card-title">{{ lesson.title }}</h5>
+                        
+                        <!-- Lesson Description -->
+                        <p class="card-text text-truncate" style="max-height: 4rem; overflow: hidden;">
+                            {{ lesson.description }}
+                        </p>
+                        
+                        <!-- Action Button -->
+                        {% if lesson in progress.completed_lessons.all %}
+                            <span class="badge bg-success">Completed</span>
+                        {% else %}
+                            <a href="{% url 'complete_lesson' lesson.id %}" class="btn btn-primary btn-sm">Start Lesson</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
 
-<h3>Reviews</h3>
-<ul>
-    {% for review in course.reviews.all %}
-        <li>
-            <strong>{{ review.user.username }}</strong>: {{ review.comment }} (Rating: {{ review.rating }})
-        </li>
-    {% empty %}
-        <li>No reviews yet. Be the first to <a href="{% url 'add_review' course.id %}">write a review</a>!</li>
-    {% endfor %}
-</ul>
+    <!-- Reviews Section -->
+    <h3 class="mt-4">Reviews</h3>
+    <ul class="list-group">
+        {% for review in course.reviews.all %}
+            <li class="list-group-item">
+                <strong>{{ review.user.username }}</strong>: 
+                {{ review.comment }} 
+                <span class="text-muted">(Rating: {{ review.rating }}/5)</span>
+            </li>
+        {% empty %}
+            <li class="list-group-item">
+                No reviews yet. Be the first to 
+                <a href="{% url 'add_review' course.id %}" class="text-primary">write a review</a>!
+            </li>
+        {% endfor %}
+    </ul>
+</div>
 {% endblock %}
