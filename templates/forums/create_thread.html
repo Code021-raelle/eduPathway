@@ -1,10 +1,16 @@
-{% extend 'base.html' %}
+{% extends 'base.html' %}
 
 {% block content %}
-<h1>Create a Thread</h1>
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Create Thread</button>
-</form>
+<div class="container mt-4">
+    <h2 class="mb-4">Create a New Thread</h2>
+    <form method="post" class="card p-4 shadow-sm">
+        {% csrf_token %}
+        <div class="form-group mb-3">
+            <label for="threadTitle" class="form-label">Thread Title</label>
+            <input type="text" name="title" id="threadTitle" class="form-control" placeholder="Enter thread title" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Create Thread</button>
+        <a href="{% url 'course_threads' course_id %}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
 {% endblock %}
