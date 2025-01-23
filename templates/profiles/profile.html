@@ -1,27 +1,52 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}{{ profile.user.username | title }}'s Profile | Edu_PathWay{% endblock %}
 
 {% block content %}
-<div class="profile-container">
-    <div class="profile-header">
-        <h2>{{ profile.user.username | title }}</h2>
+<div class="profile-container" style="max-width: 600px; margin: 0 auto; background-color: #f5f5f5; border-radius: 10px; padding: 20px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
+    <!-- Profile Header -->
+    <div class="profile-header text-center">
+        <div style="margin-bottom: 15px;">
+            {% if profile.image %}
+                <img src="{{ profile.image.url }}" alt="{{ profile.user.username }}" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover;">
+            {% else %}
+                <img src="{% static 'default-profile.png' %}" alt="Default Profile" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover;">
+            {% endif %}
+        </div>
+        <h2 style="margin-bottom: 5px;">{{ profile.user.username | title }}</h2>
         {% if profile.user.is_instructor %}
-        <span class="badge badge-instructor">Instructor</span>
+            <span style="color: #007bff; font-size: 0.9rem;">Instructor</span>
         {% elif profile.user.is_student %}
-        <span class="badge badge-student">Student</span>
+            <span style="color: #28a745; font-size: 0.9rem;">Student</span>
         {% endif %}
     </div>
-    <div class="profile-details">
-        <p><strong>Full Name:</strong> {{ profile.user.get_full_name }}</p>
-        <p><strong>Email:</strong> <a href="mailto:{{ profile.user.email }}">{{ profile.user.email }}</a></p>
-        <p><strong>Bio:</strong> {{ profile.bio }}</p>
-        <p><strong>Joined:</strong> {{ profile.user.date_joined|date:"F j, Y" }}</p>
+
+    <!-- Profile Details -->
+    <div class="profile-details mt-4">
+        <div style="display: flex; align-items: center; margin-bottom: 10px;">
+            <i class="fa fa-user-circle" style="margin-right: 10px; font-size: 1.5rem; color: #007bff;"></i>
+            <p style="margin: 0;"><strong>Full Name:</strong> {{ profile.user.get_full_name }}</p>
+        </div>
+        <div style="display: flex; align-items: center; margin-bottom: 10px;">
+            <i class="fa fa-envelope" style="margin-right: 10px; font-size: 1.5rem; color: #007bff;"></i>
+            <p style="margin: 0;"><strong>Email:</strong> <a href="mailto:{{ profile.user.email }}">{{ profile.user.email }}</a></p>
+        </div>
+        <div style="display: flex; align-items: center; margin-bottom: 10px;">
+            <i class="fa fa-info-circle" style="margin-right: 10px; font-size: 1.5rem; color: #007bff;"></i>
+            <p style="margin: 0;"><strong>Bio:</strong> {{ profile.bio }}</p>
+        </div>
+        <div style="display: flex; align-items: center;">
+            <i class="fa fa-calendar-alt" style="margin-right: 10px; font-size: 1.5rem; color: #007bff;"></i>
+            <p style="margin: 0;"><strong>Joined:</strong> {{ profile.user.date_joined|date:"F j, Y" }}</p>
+        </div>
     </div>
-    <div class="profile-footer">
-        {% if profile.user == request.user %}
-        <a href="{% url 'edit_profile' %}" class="btn btn-primary">Edit Profile</a>
-        {% endif %}
-    </div>
+
+    <!-- Edit Button -->
+    {% if profile.user == request.user %}
+        <div class="profile-footer mt-4 text-center">
+            <a href="{% url 'edit_profile' request.user %}" class="btn btn-primary" style="width: 100%; border-radius: 25px; font-size: 1rem; padding: 10px;">Edit Profile</a>
+        </div>
+    {% endif %}
 </div>
 {% endblock %}
