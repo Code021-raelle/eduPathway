@@ -1,0 +1,36 @@
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    margin: 0;
+}
+/* Allow main content to grow and take available space */
+main {
+    flex: 1;
+}
+
+.card:hover {
+    transform: scale(1.02);
+    transition: transform 0.2s ease-in-out;
+}
+
+.container {
+    margin-top: 20px;
+}
+
+.border-right {
+    border-right: 1px solid #ddd;
+}
+
+.list-group-item a {
+    text-decoration: none;
+    color: #000;
+}
+
+.list-group-item a:hover {
+    color: #007bff;
+}
+
+.text-right {
+    text-align: right;
+}
