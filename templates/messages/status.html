@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container my-4">
+    <h2>Your Status</h2>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="status_message" class="form-label">Status Message:</label>
+            <textarea id="status_message" name="status_message" class="form-control" rows="2"></textarea>
+        </div>
+        <div class="mb-3">
+            <label for="status_image" class="form-label">Upload an Image:</label>
+            <input type="file" id="status_image" name="status_image" class="form-control">
+        </div>
+        <button type="submit" class="btn btn-primary">Update Status</button>
+    </form>
+    <hr>
+    <h3>Current Status:</h3>
+    {% if user.userprofile.status_message %}
+        <p>{{ user.userprofile.status_message }}</p>
+    {% endif %}
+    {% if user.userprofile.status_image %}
+        <img src="{{ user.userprofile.status_image.url }}" class="img-fluid" alt="Status Image">
+    {% endif %}
+</div>
+{% endblock %}

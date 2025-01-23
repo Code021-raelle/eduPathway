@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-3">Inbox</h2>
+    {% if messages %}
+        <ul class="list-group">
+            {% for message in messages %}
+                <li class="list-group-item">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <strong>From:</strong> {{ message.sender.username }}
+                            <p>{{ message.content }}</p>
+                            <small class="text-muted">Sent: {{ message.timestamp|date:"d M Y, H:i" }}</small>
+
+                            <!-- Replies Section -->
+                            {% if message.replies.exists %}
+                                <div class="mt-3">
+                                    <strong>Replies:</strong>
+                                    <ul class="list-group mt-2">
+                                        {% for reply in message.replies.all %}
+                                            <li class="list-group-item">
+                                                <strong>From:</strong> {{ reply.sender.username }}<br>
+                                                <p>{{ reply.content }}</p>
+                                                <small class="text-muted">Sent: {{ reply.timestamp|date:"d M Y, H:i" }}</small>
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            {% endif %}
+
+                            <!-- Reply Form -->
+                            <form method="post" class="mt-3">
+                                {% csrf_token %}
+                                <input type="hidden" name="original_message_id" value="{{ message.id }}">
+                                <div class="form-group">
+                                    <textarea name="reply_content" class="form-control" rows="2" placeholder="Type your reply here..." required></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-sm btn-primary mt-2">Reply</button>
+                            </form>
+                        </div>
+                    </div>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p class="text-muted">No messages in your inbox.</p>
+    {% endif %}
+</div>
+{% endblock %}
