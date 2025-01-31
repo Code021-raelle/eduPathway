@@ -6,9 +6,9 @@
     <ul class="list-group">
         {% for thread in threads %}
             <li class="list-group-item">
-                <a href="{% url 'thread_replies' course.id thread.id %}">{{ thread.title }}</a>
+                <a href="{% url 'thread_replies' course.id thread.id %}"><b>{{ thread.title }}</b></a>
                 <br>
-                <small>By {{ thread.user.username }} on {{ thread.created_at }}</small>
+                <small><i>By {{ thread.user.username }} on {{ thread.created_at }}</i></small>
             </li>
         {% empty %}
             <li class="list-group-item">
