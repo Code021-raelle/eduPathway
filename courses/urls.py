@@ -23,7 +23,6 @@ urlpatterns = [
     path('dashboard/analytics/', views.analytics_dashboard, name='analytics_dashboard'),
     path('gamification/badges/', views.user_badges, name='user_badges'),
     path('gamification/leaderboard/', views.view_leaderboard, name='view_leaderboard'),
-    path('profiles/<str:username>/', views.user_profile, name='user_profile'),
     path('profile/<str:user>/edit/', views.edit_profile, name='edit_profile'),
     path('inbox/', views.inbox, name='inbox'),
     path('chats/', views.send_message, name='send_message'),
