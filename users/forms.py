@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm, AuthenticationForm
-from .models import CustomUser
+from .models import CustomUser, UserProfile
 from django.contrib.auth import get_user_model
 
 CustomUser = get_user_model()
@@ -53,3 +53,8 @@ class CustomAuthenticationForm(AuthenticationForm):
     
     class Meta:
         model = CustomUser
+
+    
+    class Meta:
+        model = UserProfile
+        fields = ['bio', 'profile_picture']
