@@ -4,7 +4,7 @@ from django.template.loader import render_to_string
 from django.forms import ModelForm
 from django.http import JsonResponse, HttpResponse, HttpResponseRedirect
 from .models import (Course, UserCourseProgress, Lesson, Certificate, Review, Notification, Quiz, Question, Leaderboard,
-                     Choice, DiscussionThread, DiscussionReply, CourseSerializer, CourseEngagement, UserProfile, UserProgress, StudyGroup, Message, Badge, UserBadge)
+                     Choice, DiscussionThread, DiscussionReply, CourseSerializer, CourseEngagement, UserProgress, StudyGroup, Message, Badge, UserBadge)
 from django.db.models import Avg, Count, F
 from django.contrib.admin.views.decorators import staff_member_required
 from django.utils import timezone
@@ -330,11 +330,6 @@ class NextModuleView(APIView):
         if recommended_module:
             return Response({'module_id': recommended_module.id, 'title': recommended_module.title})
         return Response({'error': 'No modules to recommend'}, status=404)
-
-
-def user_profile(request, username):
-    profile = get_object_or_404(UserProfile, user__username=username)
-    return render(request, 'profiles/profile.html', {'profile': profile})
 
 
 @login_required
