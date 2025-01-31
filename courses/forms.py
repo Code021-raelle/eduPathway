@@ -1,5 +1,5 @@
 from django import forms
-from .models import Course, Lesson, Review, UserProfile
+from .models import Course, Lesson, Review
 
 class CourseForm(forms.ModelForm):
     class Meta:
@@ -24,9 +24,6 @@ class EditProfileForm(forms.ModelForm):
     last_name = forms.CharField(max_length=30, required=False, label="Last Name")
     email = forms.EmailField(required=True, label="Email")
 
-    class Meta:
-        model = UserProfile
-        fields = ['bio', 'profile_picture']
 
     def save(self, commit=True):
         profile = super().save(commit=False)
