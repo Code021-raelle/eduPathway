@@ -10,7 +10,7 @@ def register(request):
         if form.is_valid():
             user = form.save()
             login(request, user)
-            return redirect('home')
+            return redirect('course_list')
         else:
             return render(request, 'users/register.html', {'form': form})
     else:
