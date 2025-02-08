@@ -55,7 +55,9 @@
             <li class="list-group-item">
                 <strong>{{ review.user.username }}</strong>: 
                 {{ review.comment }} 
-                <span class="text-muted">(Rating: {{ review.rating }}/5)</span>
+                <span class="text-danger">
+                    {% for _ in "12345"|slice:review.rating %}⭐{% endfor %}
+                </span>
             </li>
         {% empty %}
             <li class="list-group-item">
@@ -64,5 +66,9 @@
             </li>
         {% endfor %}
     </ul>
+
+    <div class="text-center mt-3">
+        <a href="{% url 'add_review' course.id %}" class="btn btn-outline-primary">Add more reviews</a>
+    </div>
 </div>
 {% endblock %}
