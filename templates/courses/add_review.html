@@ -14,15 +14,22 @@
                     <form method="post" class="needs-validation" novalidate>
                         {% csrf_token %}
                         {{ form.non_field_errors }}
-                        {% for field in form %}
+                        
                         <div class="form-group mb-3">
-                            {{ field.label_tag }} <span class="text-danger">*</span>
-                            {{ field }}
-                            <div class="invalid-feedback">
-                                {{ field.errors|join:" " }}
+                            <label for="{{ form.comment.id_for_label }}">Your Review <span class="text-danger">*</span></label>
+                            {{ form.comment }}
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                            <label for="{{ form.rating.id_for_label }}">Your Rating <span class="text-danger">*</span></label>
+                            <div class="star-rating">
+                                {% for i in "12345" %}
+                                    <input type="radio" id="star{{ i }}" name="rating" value="{{ i }}" required>
+                                    <label for="star{{ i }}">⭐</label>
+                                {% endfor %}
                             </div>
                         </div>
-                        {% endfor %}
+                        
                         <button type="submit" class="btn btn-primary btn-block">Submit Review</button>
                     </form>
                 </div>
