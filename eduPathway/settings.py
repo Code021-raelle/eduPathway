@@ -81,7 +81,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'eduway_db',
-        'USER': 'root',
+        'USER': 'gabby',
         'PASSWORD': 'gabriel',
         'HOST': 'localhost',
         'PORT': '3306',
