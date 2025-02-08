@@ -22,11 +22,10 @@
             <h1 class="h4"><a href="{% url 'course_list' %}" class="text-decoration-none text-dark">EduPathway</a></h1>
             <nav>
                 <ul class="nav">
-                    <li class="nav-item"><a href="{% url 'course_list' %}" class="nav-link">Courses</a></li>
                     {% if request.user.is_authenticated %}
                         <li class="nav-item">
                             <a href="{% url 'view_notifications' %}" class="nav-link position-relative">
-                                <i class="fa fa-bell"></i> Notifications
+                                <i class="fa fa-bell"></i> 
                                 {% if unread_count > 0 %}
                                     <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
                                         {{ unread_count }}
@@ -35,6 +34,8 @@
                                 {% endif %}
                             </a>
                         </li>
+
+                        <li class="nav-item"><a href="{% url 'course_list' %}" class="nav-link">Courses</a></li>
                         
                         <!-- User Profile Dropdown -->
                         <li class="nav-item dropdown">
