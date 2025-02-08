@@ -1,6 +1,8 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404, redirect
 from django.template.loader import render_to_string
+from django.contrib.auth.signals import user_logged_in
+from django.dispatch import receiver
 from django.forms import ModelForm
 from django.http import JsonResponse, HttpResponse, HttpResponseRedirect
 from .models import (Course, UserCourseProgress, Lesson, Certificate, Review, Notification, Quiz, Question, Leaderboard,
@@ -19,6 +21,18 @@ from uuid import uuid4
 import stripe
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
+
+@receiver(user_logged_in)
+def add_welcome_notification(sender, request, user, **kwargs):
+    """Ensure existing users receive a welcome notification if they haven't already."""
+    if not Notification.objects.filter(user=user, message__icontains="Welcome to our platform").exists():
+        Notification.objects.create(
+            user=user,
+            message="Welcome to our platform! We're excited to have you here 🎉."
+        )
+    else:
+        pass
+
 
 def course_payment(request, course_id):
     course = get_object_or_404(Course, id=course_id)
@@ -151,10 +165,11 @@ def add_review(request, course_id):
             review.user = request.user
             review.course = course
             review.save()
-            return redirect('course_detail', course_id=course_id)
-        else:
-            form = ReviewForm()
-        return render(request, 'courses/add_review.html', {'form': form, 'course': course})
+            return redirect('course_detail', pk=course_id)
+    else:
+        form = ReviewForm()
+    
+    return render(request, 'courses/add_review.html', {'form': form, 'course': course})
 
 
 @staff_member_required
@@ -179,12 +194,13 @@ def send_notification(user, message):
 def complete_course(user, course):
     progress = UserCourseProgress.objects.get(user=user, course=course)
     if progress.progress == 100.0:
-        send_notification(user, f"Congratulations! You've completed the course {course.title}.")
+        send_notification(user, f"Congratulations! You've completed the course 🎉 {course.title}.")
 
 
 @login_required
 def view_notifications(request):
     notifications = request.user.notifications.filter(is_read=False)
+    notifications = Notification.objects.filter(user=request.user).order_by('-created_at')
     notifications.update(is_read=True)
     return render(request, 'users/notifications.html', {'notifications': notifications})
 
@@ -334,7 +350,7 @@ class NextModuleView(APIView):
 
 @login_required
 def edit_profile(request):
-    profile = request.user.profile
+    profile = request.user.userprofile
     if request.method == 'POST':
         form = EditProfileForm(request.POST, request.FILES, instance=profile)
         if form.is_valid():
