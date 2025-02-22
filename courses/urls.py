@@ -1,14 +1,17 @@
 from django.urls import path
 from . import views
-from .views import CourseListView
+from .views import CourseListView, CourseEditView, LessonDetailView, EditLessonView
 
 urlpatterns = [
     path('', views.landing_page, name='landing_page'),
     path('courses/list', views.course_list, name='course_list'),
     path('courses/create/', views.course_create, name='course_create'),
+    path('course/edit/<int:pk>/', CourseEditView.as_view(), name='edit_course'),
     path('<int:pk>/', views.course_detail, name='course_detail'),
     path('instructor/dashboard/', views.instructor_dashboard, name='instructor_dashboard'),
     path('course/<int:course_id>/add_lesson/', views.add_lesson, name='add_lesson'),
+    path('lesson/<int:pk>/', LessonDetailView.as_view(), name='lesson_detail'),
+    path('lesson/<int:pk>/edit/', EditLessonView.as_view(), name='edit_lesson'),
     path('lessons/<int:lesson_id>/complete/', views.complete_lesson, name='complete_lesson'),
     path('course/<int:course_id>/certificate/', views.generate_certificate, name='generate_certificate'),
     path('course/<int:course_id>/review/', views.add_review, name='add_review'),
