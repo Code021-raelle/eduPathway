@@ -16,11 +16,50 @@ from rest_framework.response import Response
 from users.models import CustomUser
 from .forms import CourseForm, LessonForm, ReviewForm, EditProfileForm
 from django.utils.timezone import now
+from django.views.generic import UpdateView, DetailView, UpdateView
+from django.urls import reverse_lazy
 from weasyprint import HTML
 from uuid import uuid4
 import stripe
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
+
+class CourseEditView(UpdateView):
+    model = Course
+    form_class = CourseForm
+    template_name = 'courses/course_edit.html'
+
+    def form_valid(self, form):
+        course = form.save(commit=False)
+        course.instructor = self.request.user   # Ensure only instructor can edit
+        course.save()
+        return redirect('instructor_dashboard')
+    
+class LessonDetailView(DetailView):
+    model = Lesson
+    template_name = 'courses/lesson_detail.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        lesson = self.get_object()
+        progress, created = UserCourseProgress.objects.get_or_create(user=self.request.user, course=lesson.course)
+
+        context['progress'] = progress
+        return context
+    
+class EditLessonView(UpdateView):
+    model = Lesson
+    form_class = LessonForm
+    template_name = 'courses/edit_lesson.html'
+
+    def get_success_url(self):
+        return reverse_lazy('lesson_detail', kwargs={'pk': self.object.pk})
+    
+    def dispatch(self, request, *args, **kwargs):
+        lesson = self.get_object()
+        if not request.user.is_authenticated or not request.user.is_instructor:
+            return redirect('lesson_detail', pk=lesson.pk)
+        return super().dispatch(request, *args, **kwargs)
 
 @receiver(user_logged_in)
 def add_welcome_notification(sender, request, user, **kwargs):
