@@ -3,7 +3,7 @@
 {% block content %}
 <div class="container mt-4">
     <!-- Course Title -->
-    <h2>{{ course.title }}</h2>
+    <h2 class="mb-2">{{ course.title }}</h2>
     <p>{{ course.description }}</p>
     <p><strong>Price:</strong> ${{ course.price }}</p>
 
@@ -24,7 +24,7 @@
                     {% if lesson.thumbnail %}
                         <img src="{{ lesson.thumbnail.url }}" class="card-img-top" alt="{{ lesson.title }}">
                     {% else %}
-                        <img src="" class="card-img-top" alt="Default Thumbnail">
+                        <img src="{{ course.image.url }}" class="card-img-top" alt="{{ course.title }}">
                     {% endif %}
                     
                     <div class="card-body">
@@ -39,8 +39,14 @@
                         <!-- Action Button -->
                         {% if lesson in progress.completed_lessons.all %}
                             <span class="badge bg-success">Completed</span>
+                        {% elif progress.current_lesson == lesson %}
+                            <a href="{% url 'lesson_detail' lesson.id %}" class="btn btn-warning btn-sm">
+                                Resume Lesson
+                            </a>
                         {% else %}
-                            <a href="{% url 'complete_lesson' lesson.id %}" class="btn btn-primary btn-sm">Start Lesson</a>
+                            <a href="{% url 'lesson_detail' lesson.id %}" class="btn btn-primary btn-sm">
+                                Start Lesson
+                            </a>
                         {% endif %}
                     </div>
                 </div>
