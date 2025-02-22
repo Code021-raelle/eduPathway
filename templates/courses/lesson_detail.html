@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>{{ lesson.title }}</h2>
+    <p>{{ lesson.description }}</p>
+
+    <!-- Video Content -->
+    {% if lesson.video_url %}
+        <div class="embed-responsive embed-responsive-16by9">
+            <iframe class="embed-responsive-item" src="{{ lesson.video_url }}" allowfullscreen></iframe>
+        </div>
+    {% endif %}
+
+    <!-- Mark as Complete -->
+    <form method="post" action="{% url 'complete_lesson' lesson.id %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-success mt-3">Mark as Completed</button>
+    </form>
+
+    <!-- Edit Button for Instructors -->
+    {% if user.is_authenticated and user.is_instructor %}
+        <a href="{% url 'edit_lesson' lesson.id %}" class="btn btn-warning mt-3">Edit Lesson</a>
+    {% endif %}
+
+    <a href="{% url 'course_detail' lesson.course.id %}" class="btn btn-secondary mt-3">Back to Lessons</a>
+</div>
+{% endblock %}
