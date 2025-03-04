@@ -14,7 +14,7 @@ from django.conf import settings
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from users.models import CustomUser
-from .forms import CourseForm, LessonForm, ReviewForm, EditProfileForm
+from .forms import CourseForm, LessonForm, ReviewForm
 from django.utils.timezone import now
 from django.views.generic import UpdateView, DetailView, UpdateView
 from django.urls import reverse_lazy
@@ -385,23 +385,6 @@ class NextModuleView(APIView):
         if recommended_module:
             return Response({'module_id': recommended_module.id, 'title': recommended_module.title})
         return Response({'error': 'No modules to recommend'}, status=404)
-
-
-@login_required
-def edit_profile(request):
-    profile = request.user.userprofile
-    if request.method == 'POST':
-        form = EditProfileForm(request.POST, request.FILES, instance=profile)
-        if form.is_valid():
-            form.save()
-            return redirect('user_profile')
-    else:
-        form = EditProfileForm(instance=profile, initial={
-            'first_name': request.user.first_name,
-            'last_name': request.user.last_name,
-            'email': request.user.email
-        })
-    return render(request, 'profiles/edit_profile.html', {'form': form})
 
 
 def course_groups(request, course_id):
