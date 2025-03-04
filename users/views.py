@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, logout, authenticate
-from .forms import CustomUserCreationForm, CustomUserChangeForm, CustomAuthenticationForm
+from django.contrib.auth.decorators import login_required
+from .forms import CustomUserCreationForm, CustomUserChangeForm, CustomAuthenticationForm, EditProfileForm
 from .models import UserProfile
 
 
@@ -42,3 +43,20 @@ def logout_view(request):
 def user_profile(request, username):
     profile = get_object_or_404(UserProfile, user__username=username)
     return render(request, 'profiles/profile.html', {'profile': profile})
+
+
+@login_required
+def edit_profile(request):
+    profile = get_object_or_404(UserProfile, user=request.user)
+    if request.method == 'POST':
+        form = EditProfileForm(request.POST, request.FILES, instance=profile)
+        if form.is_valid():
+            form.save()
+            return redirect('user_profile', username=request.user.username)
+    else:
+        form = EditProfileForm(instance=profile, initial={
+            'first_name': request.user.first_name,
+            'last_name': request.user.last_name,
+            'email': request.user.email
+        })
+    return render(request, 'profiles/edit_profile.html', {'form': form})
