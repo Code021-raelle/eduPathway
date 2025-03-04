@@ -22,13 +22,6 @@ class ReviewForm(forms.ModelForm):
         }
 
 
-class EditProfileForm(forms.ModelForm):
-    username = forms.CharField(max_length=30, required=False, label="Username")
-    first_name = forms.CharField(max_length=30, required=False, label="First Name")
-    last_name = forms.CharField(max_length=30, required=False, label="Last Name")
-    email = forms.EmailField(required=True, label="Email")
-
-
     def save(self, commit=True):
         profile = super().save(commit=False)
         user = profile.user
