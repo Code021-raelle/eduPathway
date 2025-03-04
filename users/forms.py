@@ -58,4 +58,4 @@ class CustomAuthenticationForm(AuthenticationForm):
 class EditProfileForm(forms.ModelForm):
     class Meta:
         model = UserProfile
-        fields = ['bio', 'profile_picture']
+        fields = ('__all__')
