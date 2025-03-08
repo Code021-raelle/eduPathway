@@ -42,6 +42,17 @@
         </div>
     </div>
 
+    <div style="display: flex; align-items: center; margin-bottom: 10px;">
+        <i class="fa fa-coins" style="margin-right: 10px; font-size: 1.5rem; color: #f39c12;"></i>
+        <p style="margin: 0;"><strong>Points:</strong> {{ profile.points }}</p>
+    </div>
+    
+    {% if profile.points >= 1000 %}
+        <div class="text-center mt-3">
+            <a href="{% url 'withdraw_cash' %}" class="btn btn-success" style="border-radius: 25px;">Withdraw Cash</a>
+        </div>
+    {% endif %}
+
     <!-- Edit Button -->
     {% if profile.user == request.user %}
         <div class="profile-footer mt-4 text-center">
