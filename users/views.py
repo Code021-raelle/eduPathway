@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 from .forms import CustomUserCreationForm, CustomUserChangeForm, CustomAuthenticationForm, EditProfileForm
 from .models import UserProfile
 
@@ -60,3 +61,17 @@ def edit_profile(request):
             'email': request.user.email
         })
     return render(request, 'profiles/edit_profile.html', {'form': form})
+
+
+@login_required
+def withdraw_cash(request):
+    profile = request.user.userprofile
+
+    if profile.can_withdraw_cash():
+        profile.points -= -1000     # Deduct 1000 points
+        profile.save()
+        messages.success(request, "You have successfully withdrawn cash!")
+    else:
+        messages.error(request, "You need at least points to withdraw cash.")
+
+    return redirect('profile', username=request.user.username)
