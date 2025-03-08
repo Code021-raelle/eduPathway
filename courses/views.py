@@ -3,6 +3,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.template.loader import render_to_string
 from django.contrib.auth.signals import user_logged_in
 from django.dispatch import receiver
+from django.contrib import messages
 from django.forms import ModelForm
 from django.http import JsonResponse, HttpResponse, HttpResponseRedirect
 from .models import (Course, UserCourseProgress, Lesson, Certificate, Review, Notification, Quiz, Question, Leaderboard,
@@ -155,18 +156,26 @@ def add_lesson(request, course_id):
 
 @login_required
 def complete_lesson(request, lesson_id):
+    from users.models import UserProfile
     lesson = get_object_or_404(Lesson, id=lesson_id)
-    try:
-        progress = UserCourseProgress.objects.get(user=request.user, course=lesson.course)
-    except UserCourseProgress.DoesNotExist:
-        progress = UserCourseProgress.objects.create(user=request.user, course=lesson.course)
+    profile = request.user.userprofile
 
-    progress.completed_lessons.add(lesson)
-    total_lessons = lesson.course.lessons.count()
-    completed_lessons = progress.completed_lessons.count()
-    progress.progress = (completed_lessons / total_lessons) * 100
-    progress.save()
-    return JsonResponse({'success': True, 'progress': progress.progress})
+    if lesson not in profile.completed_courses.all():
+        profile.completed_courses.add(lesson.course) # Track course completion
+        profile.add_points(10)  # Award 10 points for completing a lesson
+
+        try:
+            progress = UserCourseProgress.objects.get(user=request.user, course=lesson.course)
+        except UserCourseProgress.DoesNotExist:
+            progress = UserCourseProgress.objects.create(user=request.user, course=lesson.course)
+
+        progress.completed_lessons.add(lesson)
+        total_lessons = lesson.course.lessons.count()
+        completed_lessons = progress.completed_lessons.count()
+        progress.progress = (completed_lessons / total_lessons) * 100
+        progress.save()
+        return JsonResponse({'success': True, 'progress': progress.progress})
+    return JsonResponse({"message": "Lesson completed!", "points": profile.points})
 
 
 def generate_certificate(request, course_id):
