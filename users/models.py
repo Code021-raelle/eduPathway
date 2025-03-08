@@ -36,6 +36,17 @@ class UserProfile(models.Model):
     status_message = models.TextField(blank=True, null=True)
     status_image = models.ImageField(upload_to='status/', blank=True, null=True)
 
+    points = models.IntegerField(default=0) # New field for tracking points
+
+    def add_points(self, amount):
+        """ Add points to the user profile"""
+        self.points += amount
+        self.save()
+
+    def can_withdraw_cash(self):
+        """ Check if user has at least 1000 points"""
+        return self.points >= 1000
+
     def __str__(self):
         return f"{self.user.username}'s Profile"
     
