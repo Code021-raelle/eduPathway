@@ -8,7 +8,7 @@ from django.forms import ModelForm
 from django.http import JsonResponse, HttpResponse, HttpResponseRedirect
 from .models import (Course, UserCourseProgress, Lesson, Certificate, Review, Notification, Quiz, Question, Leaderboard,
                      Choice, DiscussionThread, DiscussionReply, CourseSerializer, CourseEngagement, UserProgress, StudyGroup, Message, Badge, UserBadge)
-from django.db.models import Avg, Count, F
+from django.db.models import Avg, Count, F, Sum
 from django.contrib.admin.views.decorators import staff_member_required
 from django.utils import timezone
 from django.conf import settings
@@ -359,13 +359,27 @@ def analytics_dashboard(request):
     analytics = []
     for course in courses:
         engagement = CourseEngagement.objects.filter(course=course)
-        total_time = sum([e.time_spent.total_seconds() for e in engagement], 0)
-        completion_rate = engagement.filter(completed=True).count() / engagement.count() * 100 if engagement.count() > 0 else 0
+        
+        # Use aggregate() to optimize total time calculation
+        total_seconds = engagement.aggregate(total_time=Sum('time_spent'))['total_time'] or 0
+
+        # Calculate completion rate safely
+        engagement_count = engagement.count()
+        completed_count = engagement.filter(completed=True).count()
+        completoin_rate = (completed_count / engagement_count * 100) if engagement_count > 0 else 0
+
+        # Convert total_seconds to hh:mm:ss format
+        hours = total_seconds // 3600
+        minutes = (total_seconds % 3600) // 60
+        seconds = total_seconds % 60
+        formatted_time = f"{hours}h {minutes}m {seconds}s"
+
         analytics.append({
             'course': course.title,
-            'total_time_spent': total_time,
-            'completion_rate': completion_rate,
+            'total_time_spent': formatted_time,
+            'completoin_rate': round(completoin_rate, 2),
         })
+
     return render(request, 'dashboard/analytics.html', {'analytics': analytics})
 
 
