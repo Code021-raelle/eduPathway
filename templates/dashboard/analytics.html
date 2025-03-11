@@ -1,18 +1,29 @@
 {% extends 'base.html' %}
+
 {% block content %}
-<h1> {{ user.username }}'s Analytics Dashboard</h1>
-<table>
-    <tr>
-        <th>Course</th>
-        <th>Total Time Spent (seconds)</th>
-        <th>Completion Rate (%)</th>
-    </tr>
-    {% for data in analytics %}
-        <tr>
-            <td>{{ data.course }}</td>
-            <td>{{ data.total_time_spent }}</td>
-            <td>{{ data.completion_rate }}</td>
-        </tr>
-    {% endfor %}
-</table>
+<h1>{{ user.username }}'s Analytics Dashboard</h1>
+
+{% if analytics %}
+    <table border="1" cellspacing="0" cellpadding="8">
+        <thead>
+            <tr>
+                <th>Course</th>
+                <th>Total Time Spent</th>
+                <th>Completion Rate (%)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for data in analytics %}
+                <tr>
+                    <td>{{ data.course }}</td>
+                    <td>{{ data.total_time_spent }}</td>
+                    <td>{{ data.completion_rate }}%</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <p>No analytics data available.</p>
+{% endif %}
+
 {% endblock %}
