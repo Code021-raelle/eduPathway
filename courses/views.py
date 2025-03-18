@@ -516,3 +516,6 @@ def update_leaderboard(user, points):
 def view_leaderboard(request):
     leaderboard = Leaderboard.objects.all().order_by('-score')[:10]
     return render(request, 'gamification/leaderboard.html', {'leaderboard': leaderboard})
+
+def ask_ai(request):
+    return render(request, 'ask_ai.html')
