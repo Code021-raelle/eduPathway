@@ -22,8 +22,13 @@ from django.views.decorators.csrf import csrf_exempt
 from django.urls import reverse_lazy
 from weasyprint import HTML
 from uuid import uuid4
+from dotenv import load_dotenv
 import stripe
 import json
+import openai
+import groq
+import os
+
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
@@ -525,10 +530,32 @@ def ask_ai(request):
 @csrf_exempt
 def ask_ai_api(request):
     if request.method == "POST":
-        data = json.loads(request.body)
-        user_message = data.get("message", "")
+        try:
+            data = json.loads(request.body)
+            user_message = data.get("message", "")
 
-        # Simulated AI response (Replace with actual AI processing)
-        ai_response = f"You asked: {user_message}. Here's my response!"
+            groq_api_key = settings.GROQ_API_KEY
+            model = settings.GROQ_MODEL
 
-        return JsonResponse({"response": ai_response})
+            if not groq_api_key:
+                return JsonResponse({"error": "Missing Groq API key"}, status=500)
+
+            # Initialize Groq client
+            client = groq.Client(api_key=groq_api_key)
+
+            response = client.chat.completions.create(
+                model=model,  
+                messages=[{"role": "user", "content": user_message}],
+                temperature=0.7
+            )
+
+            ai_response = response.choices[0].message.content
+            return JsonResponse({"response": ai_response})
+
+        except groq.GroqError as e:
+            return JsonResponse({"error": f"Groq API error: {str(e)}"}, status=500)
+
+        except Exception as e:
+            return JsonResponse({"error": f"Internal server error: {str(e)}"}, status=500)
+
+    return JsonResponse({"error": "Invalid request method"}, status=405)
