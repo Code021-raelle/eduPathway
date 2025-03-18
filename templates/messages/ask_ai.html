@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Ask AI{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="text-center mb-4"><i class="fa fa-robot"></i> Ask AI</h2>
+    
+    <div class="card shadow-lg">
+        <div class="card-body">
+            <!-- Chat Display -->
+            <div id="chat-box" class="border p-3 mb-3 rounded" style="height: 400px; overflow-y: auto; background-color: #f8f9fa;">
+                <!-- Messages will be displayed here -->
+            </div>
+
+            <!-- User Input Form -->
+            <form id="chat-form">
+                <div class="input-group">
+                    <input type="text" id="user-input" class="form-control" placeholder="Ask me anything..." required>
+                    <button class="btn btn-primary" type="submit">
+                        <i class="fa fa-paper-plane"></i> Send
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript to Handle User Input and Display Messages -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const chatForm = document.getElementById("chat-form");
+        const chatBox = document.getElementById("chat-box");
+        const userInput = document.getElementById("user-input");
+
+        chatForm.addEventListener("submit", async function (event) {
+            event.preventDefault();
+
+            let userMessage = userInput.value.trim();
+            if (userMessage === "") return;
+
+            // Display user message in chat box
+            chatBox.innerHTML += `<div class="text-end"><span class="badge bg-primary p-2">${userMessage}</span></div><br>`;
+            userInput.value = "";
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            // Send request to backend
+            let response = await fetch("{% url 'ask_ai_api' %}", {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "X-CSRFToken": "{{ csrf_token }}" },
+                body: JSON.stringify({ message: userMessage })
+            });
+
+            let data = await response.json();
+
+            // Display AI response
+            chatBox.innerHTML += `<div class="text-start"><span class="badge bg-secondary p-2">${data.response}</span></div><br>`;
+            chatBox.scrollTop = chatBox.scrollHeight;
+        });
+    });
+</script>
+{% endblock %}
