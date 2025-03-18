@@ -1,3 +1,7 @@
+* {
+    width: fit-content;
+    height: fit-content;
+}
 body {
     display: flex;
     flex-direction: column;
