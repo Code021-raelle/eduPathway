@@ -10,6 +10,8 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
+import os
+from dotenv import load_dotenv
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -145,6 +147,9 @@ MEDIA_ROOT = BASE_DIR / 'media'
 STRIPE_SECRET_KEY = 'my-secret-key'
 STRIPE_PUBLISHABLE_KEY = 'my-publishable-key'
 
+GROQ_API_KEY = "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"
+GROQ_MODEL = "llama3-8b"
+
 # Set ASGI application
 ASGI_APPLICATION = 'eduPathway.asgi.application'
 
@@ -157,3 +162,9 @@ CHANNEL_LAYERS = {
         },
     },
 }
+
+load_dotenv()
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+
+if not OPENAI_API_KEY:
+    raise ValueError("⚠️ Missing OpenAI API Key! Set OPENAI_API_KEY in the .env file or system environment variables.")
