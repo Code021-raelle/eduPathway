@@ -1,6 +1,6 @@
 from django.urls import path
 from . import views
-from .views import CourseListView, CourseEditView, LessonDetailView, EditLessonView
+from .views import CourseListView, CourseEditView, LessonDetailView, EditLessonView, ask_ai_api, ask_ai
 
 urlpatterns = [
     path('', views.landing_page, name='landing_page'),
@@ -29,6 +29,7 @@ urlpatterns = [
     path('inbox/', views.inbox, name='inbox'),
     path('chats/', views.send_message, name='send_message'),
     path('chat/', views.chat, name='chat'),
-    path('ask_ai/', views.ask_ai, name='ask_ai'), 
+    path('ask_ai/', ask_ai, name='ask_ai'),
+    path('ask-ai/api/', ask_ai_api, name='ask_ai_api'), 
     path('api/courses/', CourseListView.as_view(), name='api_courses'),
 ]
