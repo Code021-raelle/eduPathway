@@ -1,63 +1,83 @@
-{% extends 'base.html' %}
-{% load static %}
-
-{% block title %}Ask AI{% endblock %}
-
-{% block content %}
-<div class="container mt-4">
-    <h2 class="text-center mb-4"><i class="fa fa-robot"></i> Ask AI</h2>
-    
-    <div class="card shadow-lg">
-        <div class="card-body">
-            <!-- Chat Display -->
-            <div id="chat-box" class="border p-3 mb-3 rounded" style="height: 400px; overflow-y: auto; background-color: #f8f9fa;">
-                <!-- Messages will be displayed here -->
-            </div>
-
-            <!-- User Input Form -->
-            <form id="chat-form">
-                <div class="input-group">
-                    <input type="text" id="user-input" class="form-control" placeholder="Ask me anything..." required>
-                    <button class="btn btn-primary" type="submit">
-                        <i class="fa fa-paper-plane"></i> Send
-                    </button>
-                </div>
-            </form>
-        </div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ask AI - EduPathway</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        #chat-container {
+            width: 50%;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        textarea {
+            width: 100%;
+            height: 100px;
+            padding: 10px;
+            font-size: 16px;
+        }
+        button {
+            padding: 10px 15px;
+            font-size: 16px;
+            margin-top: 10px;
+            cursor: pointer;
+        }
+        #response {
+            margin-top: 20px;
+            font-weight: bold;
+            background: #eef;
+            padding: 10px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div id="chat-container">
+        <h2>Ask AI</h2>
+        <textarea id="user-message" placeholder="Type your question here..."></textarea>
+        <button onclick="askAI()">Send</button>
+        <div id="response"></div>
     </div>
-</div>
 
-<!-- JavaScript to Handle User Input and Display Messages -->
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        const chatForm = document.getElementById("chat-form");
-        const chatBox = document.getElementById("chat-box");
-        const userInput = document.getElementById("user-input");
+    <script>
+        async function askAI() {
+            const userMessage = document.getElementById("user-message").value;
+            const responseDiv = document.getElementById("response");
 
-        chatForm.addEventListener("submit", async function (event) {
-            event.preventDefault();
+            if (!userMessage.trim()) {
+                responseDiv.innerHTML = "Please enter a message!";
+                return;
+            }
 
-            let userMessage = userInput.value.trim();
-            if (userMessage === "") return;
+            responseDiv.innerHTML = "Thinking...";
+            
+            try {
+                const response = await fetch("/ask-ai/api/", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ message: userMessage }),
+                });
 
-            // Display user message in chat box
-            chatBox.innerHTML += `<div class="text-end"><span class="badge bg-primary p-2">${userMessage}</span></div><br>`;
-            userInput.value = "";
-            chatBox.scrollTop = chatBox.scrollHeight;
+                const data = await response.json();
 
-            // Send request to backend
-            let response = await fetch("{% url 'ask_ai_api' %}", {
-                method: "POST",
-                headers: { "Content-Type": "application/json", "X-CSRFToken": "{{ csrf_token }}" },
-                body: JSON.stringify({ message: userMessage })
-            });
-
-            let data = await response.json();
-
-            // Display AI response
-            chatBox.innerHTML += `<div class="text-start"><span class="badge bg-secondary p-2">${data.response}</span></div><br>`;
-            chatBox.scrollTop = chatBox.scrollHeight;
-        });
-    });
-</script>
-{% endblock %}
+                if (response.ok) {
+                    responseDiv.innerHTML = `<strong>AI:</strong> ${data.response}`;
+                } else {
+                    responseDiv.innerHTML = `<strong>Error:</strong> ${data.error}`;
+                }
+            } catch (error) {
+                responseDiv.innerHTML = "<strong>Error:</strong> Unable to connect to the server.";
+            }
+        }
+    </script>
+</body>
+</html>
