@@ -1,9 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ask AI - EduPathway</title>
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Ask AI{% endblock %}
+
+{% block content %}
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -39,10 +38,9 @@
             border-radius: 5px;
         }
     </style>
-</head>
-<body>
+
     <div id="chat-container">
-        <h2>Ask AI</h2>
+        <h2 class="text-center">Ask AI</h2>
         <textarea id="user-message" placeholder="Type your question here..."></textarea>
         <button onclick="askAI()">Send</button>
         <div id="response"></div>
@@ -79,5 +77,5 @@
             }
         }
     </script>
-</body>
-</html>
+
+{% endblock %}
