@@ -18,10 +18,12 @@ from users.models import CustomUser
 from .forms import CourseForm, LessonForm, ReviewForm
 from django.utils.timezone import now
 from django.views.generic import UpdateView, DetailView, UpdateView
+from django.views.decorators.csrf import csrf_exempt
 from django.urls import reverse_lazy
 from weasyprint import HTML
 from uuid import uuid4
 import stripe
+import json
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
@@ -518,4 +520,15 @@ def view_leaderboard(request):
     return render(request, 'gamification/leaderboard.html', {'leaderboard': leaderboard})
 
 def ask_ai(request):
-    return render(request, 'ask_ai.html')
+    return render(request, 'messages/ask_ai.html')
+
+@csrf_exempt
+def ask_ai_api(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        user_message = data.get("message", "")
+
+        # Simulated AI response (Replace with actual AI processing)
+        ai_response = f"You asked: {user_message}. Here's my response!"
+
+        return JsonResponse({"response": ai_response})
