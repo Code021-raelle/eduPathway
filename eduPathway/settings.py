@@ -148,7 +148,7 @@ STRIPE_SECRET_KEY = 'my-secret-key'
 STRIPE_PUBLISHABLE_KEY = 'my-publishable-key'
 
 GROQ_API_KEY = "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"
-GROQ_MODEL = "llama3-8b"
+GROQ_MODEL = "llama3-8b-8192"
 
 # Set ASGI application
 ASGI_APPLICATION = 'eduPathway.asgi.application'
