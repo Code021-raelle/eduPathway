@@ -28,6 +28,7 @@ urlpatterns = [
     path('gamification/leaderboard/', views.view_leaderboard, name='view_leaderboard'),
     path('inbox/', views.inbox, name='inbox'),
     path('chats/', views.send_message, name='send_message'),
-    path('chat/', views.chat, name='chat'), 
+    path('chat/', views.chat, name='chat'),
+    path('ask_ai/', views.ask_ai, name='ask_ai'), 
     path('api/courses/', CourseListView.as_view(), name='api_courses'),
 ]
