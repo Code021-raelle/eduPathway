@@ -162,9 +162,3 @@ CHANNEL_LAYERS = {
         },
     },
 }
-
-load_dotenv()
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-
-if not OPENAI_API_KEY:
-    raise ValueError("⚠️ Missing OpenAI API Key! Set OPENAI_API_KEY in the .env file or system environment variables.")
